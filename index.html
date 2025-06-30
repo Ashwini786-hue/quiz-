@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Creative Quiz App</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(-45deg, #00c6ff, #0072ff, #00c6ff, #0072ff);
+      background-size: 400% 400%;
+      animation: bgMove 10s ease infinite;
+      margin: 0;
+      padding: 0;
+      color: white;
+    }
+
+    @keyframes bgMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    #progress-container {
+      background-color: rgba(255, 255, 255, 0.3);
+      height: 10px;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    #progress-bar {
+      background-color: #ffeb3b;
+      height: 10px;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    .question {
+      font-size: 1.2em;
+      margin-bottom: 15px;
+    }
+
+    .answers button {
+      background: white;
+      color: black;
+      padding: 10px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 10px;
+      width: 100%;
+      font-size: 1em;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .answers button:hover {
+      background-color: #ddd;
+      transform: scale(1.03);
+    }
+
+    .answers button:active {
+      transform: scale(0.96);
+    }
+
+    #next-btn, #restart-btn, #share-btn {
+      background: #ffa500;
+      border: none;
+      padding: 10px 20px;
+      margin: 15px auto;
+      display: block;
+      font-size: 1em;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    #next-btn:hover, #restart-btn:hover, #share-btn:hover {
+      background-color: #ffb733;
+      transform: scale(1.05);
+    }
+
+    #score, #share-section, #message {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    #share-link {
+      word-wrap: break-word;
+      color: #ffeb3b;
+    }
+
+    /* Animations */
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-up {
+      animation: slideUp 0.6s ease-in-out;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌟 Quiz Challenge 🌟</h1>
+    <div id="progress-container"><div id="progress-bar"></div></div>
+    <div id="quiz">
+      <div id="question-container">
+        <div id="question" class="question"></div>
+        <div class="answers" id="answer-buttons"></div>
+      </div>
+      <button id="next-btn">Next</button>
+      <button id="restart-btn" style="display:none;">Restart</button>
+      <div id="score" class="slide-up"></div>
+      <div id="message"></div>
+      <div id="share-section" style="display:none;">
+        <p>📤 Share your score:</p>
+        <button id="share-btn">Share Result</button>
+        <p id="share-link"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+     { q: "Which of the following is a key benefit of using Web Services?", a: ["Platform dependency", "Limited scalability", "Interoperability", "Manual data processing"], correct: 2 },
+{ q: "Which of the following protocols is commonly used in Web Services communication?", a: ["FTP", "SMTP", "HTTP", "SNMP"], correct: 2 },
+{ q: "REST Web Services typically use which of the following formats?", a: ["XML only", "JSON and XML", "HTML", "YAML"], correct: 1 },
+{ q: "Which of these is not an application area of Web Services?", a: ["Banking and Financial Services", "Healthcare", "Manual paper-based filing systems", "Mobile Applications"], correct: 2 },
+{ q: "What is SOAP in the context of Web Services?", a: ["A programming language", "A database system", "A protocol using XML-based messaging", "A hardware component"], correct: 2 },
+{ q: "Which architecture is characterized by all components being bundled into a single unit?", a: ["Client-Server Architecture", "Microservices Architecture", "Monolithic Architecture", "Service-Oriented Architecture"], correct: 2 },
+{ q: "What is a key advantage of RESTful services?", a: ["Tight coupling between services", "Complex protocol requirements", "Lightweight and stateless communication", "Requires SOAP and WSDL"], correct: 2 },
+{ q: "Which architecture allows deployment of functions without managing servers?", a: ["Client-Server", "Serverless / Function as a Service (FaaS)", "Mainframe", "Monolithic"], correct: 1 },
+{ q: "In Client-Service architecture, what is the main role of the client?", a: ["Execute business logic", "Manage databases", "Provide security services", "Initiate requests for services or resources"], correct: 3 },
+{ q: "What is a primary benefit of Distributed Architecture?", a: ["Centralized data processing", "Improved fault tolerance and scalability", "Simplified debugging", "Low network dependency"], correct: 1 },
+{ q: "What is a key limitation of monolithic architecture?", a: ["It is difficult to deploy on mobile devices", "It uses multiple distributed services", "It is hard to scale and maintain", "It lacks a database layer"], correct: 2 },
+{ q: "In which architecture is the business logic split between client and server, but most logic resides on the server?", a: ["Two-tier architecture", "Thick client", "Dumb terminal", "Thin client"], correct: 0 },
+{ q: "Which of the following is an advantage of thin clients?", a: ["Offline functionality", "Minimal local processing", "Heavy local computation", "Platform-specific development"], correct: 1 },
+{ q: "Which architecture is best known for using REST APIs and JSON over HTTP?", a: ["Microservices", "Monolithic", "SOA", "RESTful API-based architecture"], correct: 3 },
+{ q: "What is a major benefit of using mobile clients in applications?", a: ["Requires powerful servers", "Always needs internet connection", "Can integrate with device features like GPS and camera", "Cannot be distributed via app stores"], correct: 2 },
+{ q: "Which of the following is a valid reason for using XML?", a: ["Encrypting user passwords", "Styling web pages", "Representing and exchanging data", "Managing operating system processes"], correct: 2 },
+{ q: "What does the term “well-formed XML” mean?", a: ["XML document follows DTD rules", "XML contains only valid elements", "XML document follows correct syntax rules", "XML is processed using JSON"], correct: 2 },
+{ q: "In XML, which symbol is used to represent the character <?", a: ["&less;", "&lt;", "<lt>", "<less>"], correct: 1 },
+{ q: "Which of the following is a schema language used for validating XML documents?", a: ["HTML", "JSON", "CSS", "XSD"], correct: 3 },
+{ q: "What is the role of XPath in XML?", a: ["Encrypt XML documents", "Transform XML to PDF", "Navigate and select nodes in an XML document", "Define the XML version"], correct: 2 },
+    ];
+
+    const questionElement = document.getElementById("question");
+    const answerButtons = document.getElementById("answer-buttons");
+    const nextButton = document.getElementById("next-btn");
+    const restartButton = document.getElementById("restart-btn");
+    const scoreDisplay = document.getElementById("score");
+    const shareSection = document.getElementById("share-section");
+    const shareBtn = document.getElementById("share-btn");
+    const shareLink = document.getElementById("share-link");
+    const message = document.getElementById("message");
+    const progressBar = document.getElementById("progress-bar");
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    function startQuiz() {
+      currentQuestionIndex = 0;
+      score = 0;
+      nextButton.style.display = "block";
+      restartButton.style.display = "none";
+      shareSection.style.display = "none";
+      scoreDisplay.innerHTML = "";
+      shareLink.textContent = "";
+      message.textContent = "";
+      showQuestion();
+    }
+
+    function showQuestion() {
+      clearAnswers();
+      const current = questions[currentQuestionIndex];
+      questionElement.textContent = `${currentQuestionIndex + 1}. ${current.q}`;
+      questionElement.classList.add("fade-in");
+      setTimeout(() => questionElement.classList.remove("fade-in"), 600);
+
+      current.a.forEach((choice, index) => {
+        const btn = document.createElement("button");
+        btn.textContent = choice;
+        btn.onclick = () => selectAnswer(index);
+        answerButtons.appendChild(btn);
+      });
+
+      // Update progress bar
+      const progressPercent = ((currentQuestionIndex) / questions.length) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+    }
+
+    function clearAnswers() {
+      answerButtons.innerHTML = "";
+    }
+
+    function selectAnswer(index) {
+      const correctIndex = questions[currentQuestionIndex].correct;
+      if (index === correctIndex) score++;
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questions.length) {
+        showQuestion();
+      } else {
+        showScore();
+      }
+    }
+
+    function showScore() {
+      questionElement.textContent = "🎉 Quiz Finished!";
+      clearAnswers();
+      nextButton.style.display = "none";
+      restartButton.style.display = "block";
+      scoreDisplay.innerHTML = `You scored <strong>${score}</strong> out of <strong>${questions.length}</strong>`;
+      shareSection.style.display = "block";
+      progressBar.style.width = `100%`;
+
+      // Motivational message
+      if (score <= 7) {
+        message.textContent = "😅 You’re just getting started! Try again!";
+      } else if (score <= 14) {
+        message.textContent = "👍 Good job! You’re halfway to genius!";
+      } else {
+        message.textContent = "🔥 Genius Alert! You rocked it!";
+      }
+
+      const shareMessage = `🎓 I scored ${score}/${questions.length} on the Fun Quiz! Try it yourself!`;
+      shareLink.textContent = shareMessage;
+      shareBtn.onclick = () => {
+        if (navigator.share) {
+          navigator.share({ title: "Quiz Score", text: shareMessage });
+        } else {
+          navigator.clipboard.writeText(shareMessage);
+          alert("Result copied to clipboard! Paste it anywhere to share.");
+        }
+      };
+    }
+
+    nextButton.onclick = showQuestion;
+    restartButton.onclick = startQuiz;
+
+    startQuiz();
+  </script>
+</body>
+</html>
